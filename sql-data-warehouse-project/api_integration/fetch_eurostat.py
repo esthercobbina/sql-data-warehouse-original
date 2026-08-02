@@ -20,25 +20,24 @@ def fetch_eurostat_data(dataset, params):
 
     return response.json()
 
+def jsonstat_to_df(data):
+    time_index = data['dimension']['time']['category']['index']
+    pos_to_time = {v: k for k, v in time_index.items()}
+    
+    records = []
+    for pos_str, val in data['value'].items():
+        pos = int(pos_str)
+        records.append({'date': pos_to_time[pos], 'value': val})
+    
+    df = pd.DataFrame(records).sort_values('date').reset_index(drop=True)
+    df['date'] = pd.to_datetime(df['date'])
+    
+    for dim in ['geo', 'nace_r2', 's_adj', 'unit', 'indic_bt']:
+        code = list(data['dimension'][dim]['category']['index'].keys())[0]
+        df[dim] = code
+    
+    return df
 
-def jsonstat_to_dataframe(data):
-    """
-    Convert a Eurostat JSON-stat response into a pandas DataFrame.
-    """
-    #TODO: Implement the conversion logic from JSON-stat to DataFrame
-    # For now, return an empty DataFrame as a placeholder
-    return pd.DataFrame()
 
 
-# Eurostat API parameters
-params = {
-    "format": "json",
-    "lang": "en",
-    "geo": "DE",
-    "nace_r2": "G47_NF_HLTH",
-    "s_adj": "CA",
-    "indic_bt": "VOL_SLS",
-    "freq": "M",
-    "unit": "I21"
-}
-cd ..
+
